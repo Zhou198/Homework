@@ -1,21 +1,54 @@
 ```r
-m <- 30; d <- 0.5; sigma <- 1; alpha <- 0.05
+m <- 2; d <- 0.5; sigma <- 1; alpha <- 0.05
 
-set.seed(1); X <- rnorm(m, 0, sigma)
-Ntilde <- ceiling(qt(1 - alpha/2, m - 1)^2 * var(X)/d^2)
-nopt <- (qnorm(1 - alpha/2) * sigma/d)^2
+options(digits = 6)
 
-Qchi <- m * (m - 1) * (d/(sigma * qt(1 - alpha/2, m - 1)))^2
+twoStageSamp <- function(m, d, sigma, alpha){
+  X <- rnorm(m, 0, sigma); nopt <- ceiling((qnorm(1 - alpha/2) * sigma/d)^2)
+  Ntilde <- ceiling((qt(1 - alpha/2, m - 1)/d)^2 * var(X))
+  N <- max(m, Ntilde); X <- c(X, rnorm(N - m, 0, sigma)) 
+  
+  Ncandi <- m:(100^3)
+  Qchi <- c(0, Ncandi) * (m - 1) * (d/(sigma * qt(1 - alpha/2, m - 1)))^2
+  dist <- diff(pchisq(Qchi, m - 1))
+  
+  EN <- t(Ncandi) %*% dist
+  VarN <- t(Ncandi^2) %*% dist - EN^2
+  Pcov <- t(dist) %*% pnorm(d * sqrt(Ncandi)/sigma) 
+  
+  list(DistN = dist, EN = EN, SigN = sqrt(VarN), CovProb = Pcov, hatNopt = N, Nopt = nopt)
+}
 
-Pm <- pchisq(Qchi, m - 1); dist <- c(Pm, 1 - Pm)
-EN <- t(dist) %*% c(m, Ntilde)
-VarN <- cbind(Pm, 1 - Pm) %*% c(m, Ntilde)^2 - EN^2
-Pcov <- pnorm(d * sqrt(max(m, Ntilde))/sigma)
-
+library(dplyr)
 set.seed(1)
-X <- c(X, rnorm(max(Ntilde - m, 0), 0, sigma)) 
+res <- twoStageSamp(2, 0.1, 1, 0.05)
+sum(res$DistN)
+max(res$DistN)
 
-list(DistN = dist, EN = EN, SigN = sqrt(VarN), CovProb = Pcov, Nopt = nopt)
+plot(res$DistN)
+### table 1 ###
+
+M <- c(2, 10, 20, 30, 500)
+set.seed(1)
+sapply(M, function(i) {
+  res <- twoStageSamp(m = i, d = 0.5, sigma = 1, alpha = 0.05)
+  c(E = res$EN, Sig = res$SigN, Pmu = res$CovProb, n_opt = res$Nopt)
+}) 
+
+### table 2 ###
+set.seed(1)
+sapply(M, function(i) {
+  res <- twoStageSamp(m = i, d = 0.3, sigma = 1, alpha = 0.05)
+  c(E = res$EN, Sig = res$SigN, Pmu = res$CovProb, n_opt = res$Nopt)
+})
+
+### table 3 ###
+options(digits = 3)
+set.seed(1)
+sapply(M, function(i) {
+  res <- twoStageSamp(m = i, d = 0.1, sigma = 1, alpha = 0.05)
+  c(E = res$EN, Sig = res$SigN, Pmu = res$CovProb, n_opt = res$Nopt)
+})
 ```
 
 
