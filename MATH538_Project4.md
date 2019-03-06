@@ -163,10 +163,77 @@ points(dsce9[1:400], type = "l", lty = 6, col = "gray", pch = 8)
 legend("bottomright", legend = c("d = 0.5", "d = 0.3", "d = 0.1"), 
        lty = c(1, 2, 6), col = c("tomato3", "cyan3", "gray"), text.col = c("tomato3", "cyan3", "gray"))
 
-
+     
 ### (e) ###
-plot(dsce7[2:50] ~ c(3:51), type = "p", col = "tomato3", 
-     xlab = "m", pch = 20, lty = 1, ylab = expression(E[mu][","][sigma](N)))
+### n_opt ###
+ceiling(c(sapply(c(0.5, 0.3, 0.1), function(d) (qnorm(0.975) * 1/d)^2),
+  sapply(c(0.5, 0.3, 0.1), function(d) (qnorm(0.975) * 2/d)^2),
+  sapply(c(0.5, 0.3, 0.1), function(d) (qnorm(0.95) * 1/d)^2)))
+
+
+### min_EN###
+sapply(list(dsce1, dsce2, dsce3,
+         dsce4, dsce5, dsce6,
+         dsce7, dsce8, dsce9), min)
+
+### inf m###
+sapply(list(dsce1, dsce2, dsce3,
+            dsce4, dsce5, dsce6,
+            dsce7, dsce8, dsce9), 
+       function(i) which.min(i)[1]) + 1
+
+
+twoStageSamp <- function(m, d, sigma, alpha){
+  X <- rnorm(m, 0, sigma); nopt <- ceiling((qnorm(1 - alpha/2) * sigma/d)^2)
+  Ntilde <- ceiling((qt(1 - alpha/2, m - 1)/d)^2 * var(X))
+  N <- max(m, Ntilde); X <- c(X, rnorm(N - m, 0, sigma)) 
+  
+  Ncandi <- m:(10^5)
+  Qchi <- c(0, Ncandi) * (m - 1) * (d/(sigma * qt(1 - alpha/2, m - 1)))^2
+  dist <- diff(pchisq(Qchi, m - 1))
+  
+  EN <- t(Ncandi) %*% dist
+  # VarN <- t(Ncandi^2) %*% dist - EN^2
+  # Pcov <- t(dist) %*% pnorm(d * sqrt(Ncandi)/sigma) 
+  # 
+  # list(DistN = dist, EN = EN, SigN = sqrt(VarN), CovProb = Pcov, hatNopt = N, Nopt = nopt)
+  list(EN = EN)
+}
+
+
+sigma <- 1; alpha <- 0.05
+d <- seq(0.01, 0.5, length = 1000)
+Nopt <- ceiling(sapply(d, function(i) (qnorm(1 - alpha/2) * sigma/i)^2))
+set.seed(1)
+ENmin <- sapply(d, function(i) {
+  min(sapply(2:500, function(j) twoStageSamp(m = j, d = i, sigma, alpha)$EN))
+})
+
+
+plot(Nopt ~ d, type = "l", col = "tomato3", xlab = "d", pch = 20, lty = 1)
+
+
+
+ENmin <- sapply(d, function(i) {
+  for(j in 2:500){
+    curEN <- twoStageSamp(m = j, d = i, sigma, alpha)$EN
+    futEN <- twoStageSamp(m = j + 1, d = i, sigma, alpha)$EN
+    if(curEN <= futEN) break
+  }
+  curEN
+})
+
+
+
+
+dtest <- sapply(4:500, function(i) twoStageSamp(m = i, d = 0.01, sigma = 1, alpha = 0.05)$EN)
+
+plot(dtest ~ c(4:500), type = "l", col = "tomato3", xlab = "m", pch = 20, lty = 1)
+which.min(dtest)
+
+set.seed(1)
+twoStageSamp(m = 2, d = 0.5, sigma, alpha)$EN
+
 
 
 
