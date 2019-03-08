@@ -235,8 +235,59 @@ set.seed(1)
 twoStageSamp(m = 2, d = 0.5, sigma, alpha)$EN
 
 
+############################################# Renew #####################################################
+m <- 2; d <- 0.5; sigma <- 1; alpha <- 0.05
+
+options(digits = 6)
 
 
+twoStageSamp <- function(m, d, sigma, alpha){
+  X <- rnorm(m, 0, sigma); nopt <- ceiling((qnorm(1 - alpha/2) * sigma/d)^2)
+  Ntilde <- ceiling((qt(1 - alpha/2, m - 1)/d)^2 * var(X))
+  N <- max(m, Ntilde) #; X <- c(X, rnorm(N - m, 0, sigma)) 
+  
+  Ncandi <- m:(40 * N)
+  Qchi <- c(0, Ncandi) * (m - 1) * (d/(sigma * qt(1 - alpha/2, m - 1)))^2
+  dist <- diff(pchisq(Qchi, m - 1))
+
+  EN <- t(Ncandi) %*% dist
+  VarN <- t(Ncandi^2) %*% dist - EN^2
+  Pcov <- t(dist) %*% pnorm(d * sqrt(Ncandi)/sigma) 
+  
+  list(DistN = dist, EN = EN, SigN = sqrt(VarN), CovProb = Pcov, hatNopt = N, Nopt = nopt)
+  
+}
+
+
+set.seed(1)
+res <- twoStageSamp(11, 0.2, 1, 0.05)
+res$CovProb
+res$hatNopt
+
+
+
+res <- twoStageSamp(50, 0.2, 1, 0.05)
+res$EN
+res$CovProb
+
+res$hatNopt
+
+
+
+### table 1 ###
+
+M <- c(2, 10, 20, 30, 500)
+set.seed(2)
+sapply(M, function(i) {
+  res <- twoStageSamp(m = i, d = 0.1, sigma = 1, alpha = 0.05)
+  c(E = res$EN, Sig = res$SigN, Pmu = res$CovProb, n_opt = res$Nopt)
+}) 
+ 
+
+m <- 24
+d <- sqrt(0.1) * qt(0.95, m - 1)
+
+twoStageSamp(m, d, 1, 0.05)$EN
 ```
 
 
