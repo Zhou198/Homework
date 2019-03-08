@@ -245,3 +245,20 @@ twoStageSamp(m = 2, d = 0.5, sigma, alpha)$EN
 
 
 https://www.jstor.org/stable/2236965?seq=4#metadata_info_tab_contents
+
+https://projecteuclid.org/download/pdf_1/euclid.aos/1176346338
+https://www.jstor.org/stable/pdf/2236786.pdf?refreqid=excelsior%3A3a63cdc5dea70f93f2a37fb3ec331e2a
+https://www.jstor.org/stable/pdf/2236965.pdf?refreqid=excelsior%3A9d53353ebb8dfaadaf2143144d0c5c1a
+
+
+
+
+
+
+
+
+
+
+
+
+
