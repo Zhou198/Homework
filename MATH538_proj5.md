@@ -255,6 +255,72 @@ p1
 
 
 ```
+
+############################## Revise at 04/03/2019 ###################################
+set.seed(1)
+X <- rnorm(m, 0, sigma); nopt <- ceiling((qnorm(1 - alpha/2) * sigma/d)^2)
+while (m < (qt(1 - alpha/2, m - 1)/d)^2 * var(X)) {
+  X <- c(X, rnorm(1, 0, sigma))
+  m <- m + 1
+}
+
+library(doParallel)
+library(foreach)
+
+
+### maybe no precise ###
+h <- function(k, x){
+  if (k == 1) 1 else 
+    sum((x - a[k])^(2:k - 1)/factorial(2:k - 1) * sapply(k:2 - 1, function(i) h(i, a[k])))
+}
+
+### more precise ###
+log(factorial(1000))
+sum(sapply(1:1000, function(i) log(i)))
+h <- function(k, x){
+  if (k == 1) 1 else 
+    sum(exp((2:k - 1) * log(x - a[k]) - log(factorial(2:k - 1))) * sapply(k:2 - 1, function(i) h(i, a[k])))
+}
+
+### sapply mathod + more precise ###
+h <- function(k, x){
+  if (k == 1) 1 else
+    sum(sapply(2:k - 1, function(i) {
+      exp(i * log(x - a[k]) - log(factorial(i))) * h(k - i, a[k])
+    }))
+}
+Ginf <- function(k) exp(-a[k]) * sum(sapply(1:k, function(i) h(i, a[k])))
+
+### parallel computation ###
+{
+  cl <- makeCluster(detectCores())      
+  registerDoParallel(cl)       
+  getDoParWorkers()
+  
+  system.time(print(-diff(foreach(i = 1:10, .combine = "c") %dopar% Ginf(i))))
+  
+  stopImplicitCluster()
+  stopCluster(cl)
+}
+
+
+m <- 2; d <- 0.8; sigma <- 1; alpha <- 0.05
+
+pureSeqEst <- function(m, d, sigma, alpha){
+  nopt <- ceiling((qnorm(1 - alpha/2) * sigma/d)^2)
+  
+  kcandi <- ceiling((m - 1)/2):(nopt + 25)
+  a <- (kcandi - 1) * (2 * kcandi - 1) * c(0, (d/(qt(1 - alpha/2, 2 * kcandi[-1] - 2) * sigma))^2)
+  dist <- -diff(foreach(i = 1:20, .combine = "c") %dopar% Ginf(i))
+  
+  
+  sum(dist)
+  Ncandi <- 2 * kcandi[1:19] + 1
+  ch <- t(dist) %*% cbind(Ncandi, Ncandi^2, pnorm(d * sqrt(Ncandi)/sigma))
+  c(EN = ch[1], SigN = sqrt(ch[2] - ch[1]^2), CovProb = 2 * ch[3] - 1)
+
+}
+
 -->
 
 ```r
