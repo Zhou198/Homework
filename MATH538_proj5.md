@@ -320,6 +320,91 @@ pureSeqEst <- function(m, d, sigma, alpha){
   c(EN = ch[1], SigN = sqrt(ch[2] - ch[1]^2), CovProb = 2 * ch[3] - 1)
 
 }
+########################## Revise at 4/4/2019##############################
+######################## for loop ############################
+h <- function(k, x){
+  ifelse(k == 1, 1, ifelse(k == 2, x - a[k], {
+    coef <- 1; mat <- matrix(1, k - 2, k - 1)
+    hin <- function(j, y){
+      sum(exp(((j - 1):1) * log(y - a[j]) - sapply((j - 1):1, function(l) sum(log(1:l)))) * coef)
+    }
+    for (i in 2:(k - 1)) {
+      mat[(i - 1):(k - 2), i] <- sapply((i + 1):k, function(m) hin(i, a[m]))
+      coef <- mat[i - 1, 1:i]
+    }
+    hin(k, x)
+  }))
+}
+Ginf <- function(k) exp(-a[k]) * sum(sapply(1:k, function(i) h(i, a[k])))
+
+
+
+
+pureSeqEst <- function(m, d, sigma, alpha){
+  nopt <- ceiling((qnorm(1 - alpha/2) * sigma/d)^2)
+  
+  kcandi <- ceiling((m - 1)/2):(nopt + 20)
+  a <- (kcandi - 1) * (2 * kcandi - 1) * c(0, (d/(qt(1 - alpha/2, 2 * kcandi[-1] - 2) * sigma))^2)
+  
+  dist <- -diff(foreach(i = kcandi, .combine = "c") %dopar% Ginf(i))
+  dist <- -diff(sapply(kcandi, function(i) Ginf(i)))
+
+  Ncandi <- 2 * kcandi[-length(kcandi)] + 1
+  ch <- t(dist) %*% cbind(Ncandi, Ncandi^2, 2 * pnorm(d * sqrt(Ncandi)/sigma) - 1)
+  c(EN = ch[1], SigN = sqrt(ch[2] - ch[1]^2), CovProb = ch[3], nOpt = nopt, cdf = sum(dist)) %>% round(3)
+}
+#### (a) ####
+library(dplyr)
+m <- 2; d <- 0.5; sigma <- 1; alpha <- 0.05
+pureSeqEst(2, 0.5, 1, 0.05) %>% round(3)
+
+m <- 2; d <- 0.3; sigma <- 1; alpha <- 0.05
+pureSeqEst(2, 0.3, 1, 0.05) %>% round(3)
+
+m <- 2; d <- 0.5; sigma <- 2; alpha <- 0.05
+pureSeqEst(2, 0.5, 2, 0.05) %>% round(3)
+
+m <- 2; d <- 0.3; sigma <- 2; alpha <- 0.05
+pureSeqEst(2, 0.3, 2, 0.05) %>% round(3)
+
+m <- 2; d <- 0.5; sigma <- 1; alpha <- 0.1
+pureSeqEst(2, 0.5, 1, 0.1) %>% round(3)
+
+m <- 2; d <- 0.3; sigma <- 1; alpha <- 0.1
+pureSeqEst(2, 0.3, 1, 0.1) %>% round(3)
+
+
+############### AR(2) process ##################
+
+########2#########
+## a ##
+set.seed(3)
+X <- arima.sim(list(ar = c(1.5, -0.75)), n = 50) + 400
+plot(X[1:30] ~ c(1:30), pch = 19, xlab = "k", ylab = expression(X[k]), xlim = c(1,50), ylim = range(X) + c(-5, 5))
+points(X[31:50] ~ c(31:50), pch = 1)
+
+
+## b ##
+matpow <- function(mat, n) if (n == 0) diag(dim(mat)[1]) else mat %*% matpow(mat, n - 1)
+matpow(Fmat, 100)
+
+Fmat <- matrix(c(1.5, 1, -0.75, 0), 2)
+Xkl <- 400 + sapply(1:20, function(l) matpow(Fmat, l) %*% matrix(X[30:29] - 400))[1, ]
+points(Xkl ~ c(31:50), pch = 0)
+
+
+## c ##
+RMSE <- sqrt(cumsum(sapply(0:19, function(j) matpow(Fmat, j)[1, 1]^2)))
+d <- RMSE %*% t(qnorm(c(0.95, 0.975, 0.995)))
+sapply(c(-1, 1), function(i) {
+  points(c(31:50), Xkl + i * d[, 1], type = "l", lty = 2, col = "tomato3")
+  points(c(31:50), Xkl + i * d[, 2], type = "l", lty = 3, col = "cyan3")
+  points(c(31:50), Xkl + i * d[, 3], type = "l", lty = 4, col = "green3")
+})
+legend("topleft", text.col = c("tomato3", "cyan3", "green3"), bty = "n", lty = 2:4, col 
+       = c("tomato3", "cyan3", "green3"), legend = c("90% CI", "95% CI", "99% CI"))
+sapply(1:3, function(i) sum(abs(X[31:50] - Xkl) > d[, i]))
+
 
 -->
 
