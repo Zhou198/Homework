@@ -394,6 +394,12 @@ points(Xkl ~ c(31:50), pch = 0)
 
 
 ## c ##
+sigm0 <- matrix(c(1, 0, 0, 0), 2)
+mse <- function(l) if (l == 1) sigm0 else sigm0 + Fmat %*% mse(l - 1) %*% t(Fmat)
+RMSE <- sqrt(unlist(lapply(seq(2, 20, 2), function(l) rev(diag(mse(l))))))
+
+
+
 RMSE <- sqrt(cumsum(sapply(0:19, function(j) matpow(Fmat, j)[1, 1]^2)))
 d <- RMSE %*% t(qnorm(c(0.95, 0.975, 0.995)))
 sapply(c(-1, 1), function(i) {
