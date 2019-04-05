@@ -1,4 +1,4 @@
-<!--
+
 ```r
 m <- 2; d <- 0.5; sigma <- 1; alpha <- 0.05
 
@@ -289,101 +289,8 @@ m <- 24
 d <- sqrt(0.1) * qt(0.95, m - 1)
 
 twoStageSamp(m, d, 1, 0.05)$EN
+
 ```
-
-
-#### Project 5 ####
-set.seed(1)
-Z <- rexp(k)
-while (sum(Z) > k * n * (d/(qnorm(1 - alpha/2) * sigma))^2) {
-  Z <- c(Z, rexp(1))
-  k <- k + 1; n <- 2 * k + 1
-}
-
-
-h <- function(k, x){
-  if (k == 1) 1 else 
-    sum((x - a[k])^(2:k - 1)/factorial(2:k - 1) * sapply(k:2 - 1, function(i) h(i, a[k])))
-}
-Ginf <- function(k) exp(-a[k]) * sum(sapply(1:k, function(i) h(i, a[k])))
-
-m <- 2; d <- 0.5; sigma <- 1; alpha <- 0.05
-
-pureSeqEst <- function(m, d, sigma, alpha){
-  set.seed(1)
-  X <- rnorm(m, 0, sigma); nopt <- ceiling((qnorm(1 - alpha/2) * sigma/d)^2)
-  while (m < (qt(1 - alpha/2, m - 1)/d)^2 * var(X)) {
-    X <- c(X, rnorm(1, 0, sigma))
-    m <- m + 1
-  }
-  
-  kcandi <- 1:c(ceiling(m/2) * 4)
-  a <- (kcandi - 1) * (2 * kcandi - 1) * (d/(qnorm(1 - alpha/2) * sigma))^2
-  dist <- -diff(sapply(kcandi, function(m) Ginf(m))) 
-
-  
-  Ncandi <- 2 * kcandi[-length(kcandi)] + 1
-  ch <- t(dist) %*% cbind(Ncandi, Ncandi^2, 2 * pnorm(d * sqrt(Ncandi)/sigma) - 1)
-  
-  list(DistN = dist, EN = ch[1], SigN = sqrt(ch[2] - ch[1]^2), CovProb = ch[3],
-       hatNopt = N, Nopt = nopt, SampMean = mean(X))
-}
-######################################### New ###############################################################
-h <- function(k, x){
-  if (k == 1) 1 else 
-    sum((x - a[k])^(2:k - 1)/factorial(2:k - 1) * sapply(k:2 - 1, function(i) h(i, a[k])))
-}
-Ginf <- function(k) exp(-a[k]) * sum(sapply(1:k, function(i) h(i, a[k])))
-while (m < (qnorm(1 - alpha/2)/d)^2 * var(X)) {
-  X <- c(X, rnorm(1, 0, sigma))
-  m <- m + 1
-}
-
-
-m <- 2; d <- 0.5; sigma <- 1; alpha <- 0.05
-
-pureSeqEst <- function(m, d, sigma, alpha){
-  A <- (qnorm(1 - alpha/2) * sigma/d)^2; nopt <- ceiling(A)
-  
-  
-  kcandi <- ceiling((m - 1)/2):(2 * nopt)
-  a <- (kcandi - 1) * (2 * kcandi - 1)/A
-  dist <- -diff(sapply(kcandi, function(m) Ginf(m))) 
-  
-  G <- c(1, 0.8226386
-  , 0.7592635
-  , 0.7020921
-  , 0.6369906
-  , 0.5581723
-  , 0.4646816
-  , 0.3611172
-  , 0.2572933
-  , 0.1651689
-  , 0.09400609
-  , 0.0467599
-  , 0.02007435
-  , 0.007358334
-  , 0.002281832
-  , 0.0005939239
-  , 0.0001288803
-  , 2.318047e-05
-  , 3.438317e-06
-  , 4.187404e-07
-  , 4.170982e-08
-  , 3.386416e-09
-  , 2.234231e-10
-  , 1.194586e-11
-  , 5.163479e-13
-  , 1.800274e-14)
-  
-  dist <- -diff(G)
-  Ncandi <- 2 * kcandi[1:25] + 1
-  ch <- t(dist) %*% cbind(Ncandi, Ncandi^2, 2 * pnorm(d * sqrt(Ncandi)/sigma) - 1)
-  
-  list(DistN = dist, EN = ch[1], SigN = sqrt(ch[2] - ch[1]^2), CovProb = ch[3],
-       hatNopt = N, Nopt = nopt, SampMean = mean(X))
-}
--->
 
 
 
