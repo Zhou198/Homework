@@ -13,12 +13,10 @@ for (i in 1:N) {
 }
 
 ASN <- solve(diag(N) - Ktheta, rep(1, N))
-
 OC <- solve(diag(N) - Ktheta, pnorm(a - x, (theta1 - theta0)/sigma^2 * (0.5 - 0.5 * (theta0 + theta1)), (theta1 - theta0)/sigma))
 
 ASN[which.min(abs(x))]
 OC[which.min(abs(x))]
-
 1 - OC[which.min(abs(x))]
 
 SPRT <- function(the, the0, the1, sigma, N, alpha0, alpha1){
@@ -36,34 +34,32 @@ SPRT <- function(the, the0, the1, sigma, N, alpha0, alpha1){
 ##### Scenario1 #####
 
 theta <- seq(0, 0.5, length = 100)
-sprt1 <- SPRT(theta, 0, 0.5, 1, 1000, 0.001, 0.001)
+sprt1 <- SPRT(theta, 0, 0.5, 1, 5000, 0.001, 0.001)
 a <- sprt1$bound
 a
 
 par(mai = c(0.9, 0.9, 0.3, 0.2))
 plot(sprt1$ASN ~ theta, ylim = c(0, 300), type = "l", xlab = expression(theta), ylab = expression(ASN(theta)), col = "tomato3")
+legend("topleft", legend = c("Neyman-Person test", "SPRT"), col = c("cyan3", "tomato3"), lty = c(2, 1), text.col = c("cyan3", "tomato3"), bty = "n")
 
 
 
 
 ##### Scenario2 #####
-sprt2 <- SPRT(theta, 0, 0.5, 1, 1000, 0.001, 0.0001)
+sprt2 <- SPRT(theta, 0, 0.5, 1, 5000, 0.001, 0.0001)
 a <- sprt2$bound
 a
 
 plot(sprt2$ASN ~ theta, ylim = c(0, 300), type = "l", xlab = expression(theta), ylab = expression(ASN(theta)), col = "tomato3")
-
+legend("topleft", legend = c("Neyman-Person test", "SPRT"), col = c("cyan3", "tomato3"), lty = c(2, 1), text.col = c("cyan3", "tomato3"), bty = "n")
 
 
 ##### Scenario3 #####
-sprt3 <- SPRT(theta, 0, 0.5, 1, 1000, 0.0001, 0.001)
+sprt3 <- SPRT(theta, 0, 0.5, 1, 5000, 0.0001, 0.001)
 a <- sprt3$bound
 a
 
 plot(sprt3$ASN ~ theta, ylim = c(0, 300), type = "l", xlab = expression(theta), ylab = expression(ASN(theta)), col = "tomato3")
-
-
-
-log((1 - 0.0001)/0.001)
+legend("topleft", legend = c("Neyman-Person test", "SPRT"), col = c("cyan3", "tomato3"), lty = c(2, 1), text.col = c("cyan3", "tomato3"), bty = "n")
 
 ```
