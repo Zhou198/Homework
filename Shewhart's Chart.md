@@ -1,4 +1,4 @@
--->
+<!--
 ```{r}
 gam <- 10
 theta <- 0.1
@@ -25,4 +25,4 @@ legend("topleft", legend = c(expression(theta == 0.1), expression(theta == 0.5),
 
 
 ```
-<--
+-->
