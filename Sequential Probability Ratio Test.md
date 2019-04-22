@@ -1,4 +1,3 @@
-<!--
 ```r
 alpha0 <- 0.001; alpha1 <- 0.001; N <- 1000
 sigma <- 1; theta0 <- 0; theta1 <- 0.5; theta <- 0.5
@@ -157,4 +156,4 @@ t <- c(1, 2); t; seq(list(t), length = 5)
 seq(1, 2, length = 5)
 mapply(seq, t[1], t[2], length = 5)
 ```
--->
+
