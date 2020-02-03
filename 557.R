@@ -135,6 +135,56 @@ par(mai = c(0.83, 0.8, 0.2, 0.1))
 datCDF <- cbind(x = x, prob. = cdf, exCDF = excdf)
 ggplot(data.frame(datCDF), aes(x = x)) + geom_line(aes(y = prob.), col = "tomato3") + geom_line(aes(y = exCDF), col = "cyan3") + theme(legend.position = c(0.1, 0.86))  + theme(legend.title = element_blank())
 
+                
+
+                
+
+################ Revise #################                
+Ftil <- function(p, Size, t, Time) {
+  sapply(1:Time, function(Ti) {
+    X <- rexp(Size, 1/3); N <- rN(Size, p)
+    
+    XStar <- sapply(1:Size, function(i){
+      Y <- runif(N[i], 0, 2) + 2 * (1:N[i])
+      if (Y[1] < X[i] & X[i] <= Y[N[i]]) {k <- sum(Y < X[i]); 0.5 * (Y[k] + Y[k + 1])}
+      else Y[1] * (X[i] <= Y[1]) + Y[N[i]] * (X[i] > Y[N[i]])
+    })
+    
+    mean(XStar <= t)
+  })
+}
+
+1 - exp(-1/3 * 2.5)
+
+
+set.seed(1)
+F3 <- Ftil(p, 100, 2.5, 10)
+plot(F3)
+
+
+set.seed(1)
+F3asy <- sapply(1:5000, function(i) Ftil(p, i, 3, 1))
+plot(1:5000, F3asy, type = "l")
+abline(h = 0.34)
+
+set.seed(1)
+F2.5asy <- sapply(1:5000, function(i) Ftil(p, i, 2.5, 1))
+plot(1:5000, F2.5asy, type = "l", col = "tomato3")
+
+par(mai = c(0.83, 0.8, 0.2, 0.1))
+#plot(x, cdf, type = "l")
+
+datCDF <- cbind(x = x, prob. = cdf, hatCDF = hatcdf, exCDF = excdf)
+ggplot(data.frame(datCDF), aes(x = x)) + 
+  geom_line(aes(y = prob.), col = "tomato3") + 
+  geom_line(aes(y = hatCDF), col = "black") +
+  geom_line(aes(y = exCDF), col = "cyan3") + 
+  
+
+
+                
+                
+                
 #### T2 ####
 set.seed(1)
 U <- runif(400, 0, 100); V <- U + 40
