@@ -200,6 +200,43 @@ ggplot(data.frame(datS), aes(x = x)) + geom_line(aes(y = exS, col = "tomato3")) 
 
 
 
+genetic_code <- function(codon) {
+  if(str_detect(codon, "UU[UC]")) return("Phe")
+  if(str_detect(codon, "UU[AG]") | str_detect(codon, "CU[UCAG]")) return("Leu")
+  if(str_detect(codon, "AU[UCA]")) return("lle")
+  if(str_detect(codon, "AUG")) return("Met")
+  if(str_detect(codon, "GU[UCAG]")) return("Val")
+  
+  if(str_detect(codon, "UC[UCAG]") | str_detect(codon, "AG[UC]")) return("Ser")
+  if(str_detect(codon, "CC[UCAG]")) return("Pro")
+  if(str_detect(codon, "AC[UCAG]")) return("Thr")
+  if(str_detect(codon, "GC[UCAG]")) return("Ala")
+  
+  if(str_detect(codon, "UA[UC]")) return("Tyr")
+  if(str_detect(codon, "UA[AG]") | str_detect(codon, "UGA")) return("Stop")
+  if(str_detect(codon, "CA[UC]")) return("His")
+  if(str_detect(codon, "CA[AG]")) return("Gln")
+  if(str_detect(codon, "AA[UC]")) return("Asn")
+  if(str_detect(codon, "AA[AG]")) return("Lys")
+  if(str_detect(codon, "GA[UC]")) return("Asp")
+  if(str_detect(codon, "GA[AG]")) return("Glu")
+  
+
+  if(str_detect(codon, "UG[UC]")) return("Cys")
+  if(str_detect(codon, "UGG")) return("Trp")
+  if(str_detect(codon, "CG[UCAG]") | str_detect(codon, "AG[AG]")) return("Arg")
+  if(str_detect(codon, "GG[UCAG]")) return("Gly")
+  }
+
+
+
+codon <- str_sub(mRNA, seq(1, str_length(mRNA), by = 3), seq(3, str_length(mRNA), by = 3))
+amino <- sapply(codon, function(k) genetic_code(k))
+
+
+protein <- str_split(str_c(amino, "-", collapse = ""), "-Stop")[[1]][1]
+
+str_count(protein, "-") + 1
 
 
 
